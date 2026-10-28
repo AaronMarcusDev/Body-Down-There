@@ -1,0 +1,78 @@
+{
+    "version": 1,
+    "name": "Look",
+    "maps": [
+        {
+            "name": "LookActions",
+            "id": "3aed0f7b-51ff-4af7-98de-d8011a036150",
+            "actions": [
+                {
+                    "name": "Look",
+                    "type": "Value",
+                    "id": "b9887982-2882-407f-8c41-11e6b515882c",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true,
+                    "priority": 0
+                },
+                {
+                    "name": "StepLeft",
+                    "type": "Button",
+                    "id": "4c818702-67b4-48e5-81f0-42a6f1569138",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false,
+                    "priority": 0
+                },
+                {
+                    "name": "StepRight",
+                    "type": "Button",
+                    "id": "ba874c96-ad7c-4d46-a19a-0333898935bf",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false,
+                    "priority": 0
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "c274d756-aa5b-4abe-b4b5-a1f8ae5ae603",
+                    "path": "<Mouse>/delta",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Look",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "a59d27cd-6dd2-4ced-a2ed-395372e9d9e3",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "StepLeft",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "4b6bf2a1-5ce9-4a50-bd41-d3ded6245fd1",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "StepRight",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}
