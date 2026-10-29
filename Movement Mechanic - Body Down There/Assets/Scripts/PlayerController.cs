@@ -11,41 +11,57 @@ public class LookAndStepController : MonoBehaviour
     [Header("Look")]
     [SerializeField] private float lookSensitivity = 0.1f;
     [SerializeField] private float maxPitch = 80f;
+    [Tooltip("Smooths out mouse jitter. Higher = snappier, Lower = smoother")]
+    [SerializeField] private float lookSmoothing = 0.05f;
 
     [Header("Step / Walk")]
     [SerializeField] private Transform viewCamera;
     [SerializeField] private float stepDistance = 0.75f;
-    [SerializeField] private float stepCooldown = 0.05f;
+    [SerializeField] private float stepCooldown = 0.1f;
     [SerializeField] private float stepRayDistance = 2f;
+    [Tooltip("How fast the player slides to the new step position")]
+    [SerializeField] private float movementSmoothTime = 0.08f;
 
     [Header("Camera Tilt")]
     [SerializeField] private float maxTilt = 6f;
-    [SerializeField] private float tiltSpeed = 12f;
-    [SerializeField] private float tiltReturnSpeed = 8f;
+    [SerializeField] private float tiltSmoothTime = 0.1f;
 
     [Header("FOV / Running Simulation")]
     [SerializeField] private float baseFov = 60f;
     [SerializeField] private float maxFov = 75f;
-    [SerializeField] private float fovSmooth = 4f;
-    // Fast clicking = interval below this threshold counts toward "running"
+    [SerializeField] private float fovSmoothTime = 0.3f;
     [SerializeField] private float fastClickThreshold = 0.30f;
     [SerializeField] private float fovBoostPerFastClick = 2.5f;
 
+    // Internal State
     private float pitch;
-    private float currentTilt;
     private float targetTilt;
-    private float lastStepTime = -10f;
+    private float currentTilt;
+    private float tiltVelocity;
 
+    private float lastStepTime = -10f;
     private float fovBoost;
+    private float fovVelocity;
+
+    // Look Smoothing
+    private Vector2 smoothedLook;
+    private Vector2 lookVelocity;
+
+    // Position Smoothing
+    private Vector3 targetPosition;
+    private Vector3 positionVelocity;
+
     private Camera cam;
 
     private void Awake()
     {
-        if (viewCamera == null && Camera.main != null)
-            viewCamera = Camera.main.transform;
+        if (viewCamera == null && Camera.main != null) viewCamera = Camera.main.transform;
 
         cam = viewCamera != null ? viewCamera.GetComponent<Camera>() : GetComponentInChildren<Camera>();
+        //               if view camera is not null, set the camera to the child of the parent (the player)
         if (cam != null) cam.fieldOfView = baseFov;
+
+        targetPosition = transform.position;
     }
 
     private void OnEnable()
@@ -54,7 +70,7 @@ public class LookAndStepController : MonoBehaviour
         if (stepLeftAction != null)
         {
             stepLeftAction.action.Enable();
-            stepLeftAction.action.performed += OnStepLeft;
+            stepLeftAction.action.performed += OnStepLeft; // subscription service, see A4 from GETXR
         }
         if (stepRightAction != null)
         {
@@ -66,6 +82,7 @@ public class LookAndStepController : MonoBehaviour
     private void OnDisable()
     {
         if (lookAction != null) lookAction.action.Disable();
+
         if (stepLeftAction != null)
         {
             stepLeftAction.action.performed -= OnStepLeft;
@@ -85,16 +102,28 @@ public class LookAndStepController : MonoBehaviour
         UpdateFov();
     }
 
+    private void LateUpdate()
+    {
+        // Smoothly slide the player to the new step position
+        transform.position = Vector3.SmoothDamp(transform.position, targetPosition, ref positionVelocity, movementSmoothTime);
+        // once again, SmoothDamp is similar to Lerp but way more effect on these small switches
+    }
+
     private void Look()
     {
-        Vector2 look = lookAction.action.ReadValue<Vector2>();
+        Vector2 rawLook = lookAction.action.ReadValue<Vector2>();
 
-        transform.Rotate(Vector3.up * look.x * lookSensitivity);
+        // Smooth the mouse input to remove jitter
+        smoothedLook = Vector2.SmoothDamp(smoothedLook, rawLook, ref lookVelocity, lookSmoothing);
 
-        pitch -= look.y * lookSensitivity;
+        transform.Rotate(Vector3.up * smoothedLook.x * lookSensitivity);
+
+        pitch -= smoothedLook.y * lookSensitivity;
         pitch = Mathf.Clamp(pitch, -maxPitch, maxPitch);
 
-        // Keep tilt as a Z roll on the camera; combine with pitch.
+        // Apply tilt smoothly
+        currentTilt = Mathf.SmoothDamp(currentTilt, targetTilt, ref tiltVelocity, tiltSmoothTime);
+
         viewCamera.transform.localRotation = Quaternion.Euler(pitch, 0f, currentTilt);
     }
 
@@ -106,7 +135,6 @@ public class LookAndStepController : MonoBehaviour
         float now = Time.time;
         float sinceLast = now - lastStepTime;
 
-        // Fast-clicking detection for FOV boost
         if (sinceLast < fastClickThreshold)
         {
             fovBoost = Mathf.Min(fovBoost + fovBoostPerFastClick, maxFov - baseFov);
@@ -115,52 +143,51 @@ public class LookAndStepController : MonoBehaviour
         if (sinceLast < stepCooldown) return;
         lastStepTime = now;
 
-        // Tilt: left click -> tilt left (positive Z roll), right click -> tilt right (negative Z roll)
         targetTilt = -side * maxTilt;
 
-        // Move forward one step (in the direction the player body is facing
-        // after the look update). Uses a small raycast to avoid walking into walls.
+        // Move the target position, not the actual position
         Vector3 dir = transform.forward;
-        Vector3 origin = transform.position + Vector3.up * 0.9f;
+        Vector3 origin = targetPosition + Vector3.up * 0.9f;
+
         if (Physics.Raycast(origin, dir, out RaycastHit hit, stepRayDistance))
         {
             float allowed = Mathf.Max(0f, hit.distance - 0.3f);
-            transform.position += dir * Mathf.Min(stepDistance, allowed);
+            targetPosition += dir * Mathf.Min(stepDistance, allowed);
         }
         else
         {
-            transform.position += dir * stepDistance;
+            targetPosition += dir * stepDistance;
         }
     }
 
     private void UpdateTilt()
     {
-        if (Mathf.Approximately(targetTilt, 0f) && Mathf.Abs(currentTilt) < 0.01f)
+        // If a button is currently held down, tilt. Otherwise, return to center.
+        if (stepLeftAction.action.IsPressed())
         {
-            currentTilt = 0f;
-            return;
+            targetTilt = maxTilt;
         }
-
-        // When idle (no new click), tilt eases back to 0.
-        // We ease toward targetTilt which gets reset each frame after being consumed.
-        currentTilt = Mathf.Lerp(currentTilt, 0f, Time.deltaTime * tiltReturnSpeed);
-
-        // Apply the impulse target on top
-        currentTilt = Mathf.Lerp(currentTilt, targetTilt, Time.deltaTime * tiltSpeed);
-
-        // Decay target back toward 0 so it doesn't stick
-        targetTilt = Mathf.MoveTowards(targetTilt, 0f, Time.deltaTime * tiltSpeed * maxTilt * 4f);
+        else if (stepRightAction.action.IsPressed())
+        {
+            targetTilt = -maxTilt;
+        }
+        else
+        {
+            targetTilt = 0f;
+            // TODO: Maybe add the timer again for keeping the camera tilted for 3 seconds
+        }
     }
 
     private void UpdateFov()
     {
-        // FOV boost decays over time when not clicking fast
         fovBoost = Mathf.MoveTowards(fovBoost, 0f, Time.deltaTime * fovBoostPerFastClick * 1.5f);
+        // SO to GETXR assignment A6
 
         if (cam != null)
         {
             float targetFov = baseFov + fovBoost;
-            cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, targetFov, Time.deltaTime * fovSmooth);
+            // SmoothDamp once again, see above.
+            cam.fieldOfView = Mathf.SmoothDamp(cam.fieldOfView, targetFov, ref fovVelocity, fovSmoothTime);
         }
     }
 }
