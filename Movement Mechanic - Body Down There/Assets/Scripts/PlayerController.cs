@@ -22,6 +22,9 @@ public class LookAndStepController : MonoBehaviour
     [Tooltip("How fast the player slides to the new step position")]
     [SerializeField] private float movementSmoothTime = 0.08f;
 
+    [Header("Layer Masks to Ignore")]
+    [SerializeField] private LayerMask ignoreLayers;
+
     [Header("Camera Tilt")]
     [SerializeField] private float maxTilt = 6f;
     [SerializeField] private float tiltSmoothTime = 0.1f;
@@ -151,11 +154,12 @@ public class LookAndStepController : MonoBehaviour
 
         targetTilt = -side * maxTilt;
 
-        // Move the target position, not the actual position
         Vector3 dir = transform.forward;
         Vector3 origin = targetPosition + Vector3.up * 0.9f;
 
-        if (Physics.Raycast(origin, dir, out RaycastHit hit, stepRayDistance))
+        int mask = Physics.AllLayers & ~ignoreLayers.value;
+
+        if (Physics.Raycast(origin, dir, out RaycastHit hit, stepRayDistance, mask, QueryTriggerInteraction.Ignore))
         {
             float allowed = Mathf.Max(0f, hit.distance - 0.3f);
             targetPosition += dir * Mathf.Min(stepDistance, allowed);
