@@ -55,6 +55,12 @@ public class LookAndStepController : MonoBehaviour
 
     private void Awake()
     {
+        // Cursor
+        Cursor.visible = false; // disable visible cursor
+        Cursor.lockState = CursorLockMode.Confined; // keep confined in the game window
+        Cursor.lockState = CursorLockMode.Locked;
+
+        // Camera
         if (viewCamera == null && Camera.main != null) viewCamera = Camera.main.transform;
 
         cam = viewCamera != null ? viewCamera.GetComponent<Camera>() : GetComponentInChildren<Camera>();
