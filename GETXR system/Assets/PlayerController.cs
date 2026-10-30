@@ -22,6 +22,11 @@ public class LookAndStepController : MonoBehaviour
     [Tooltip("How fast the player slides to the new step position")]
     [SerializeField] private float movementSmoothTime = 0.08f;
 
+    [Header("Gravity & Grounding")]
+    [SerializeField] private float gravity = 15f;
+    [SerializeField] private float maxFallSpeed = 20f;
+    private float currentFallVelocity;
+
     [Header("Layer Masks to Ignore")]
     [SerializeField] private LayerMask ignoreLayers;
 
@@ -61,6 +66,7 @@ public class LookAndStepController : MonoBehaviour
         // Cursor
         Cursor.visible = false; // disable visible cursor
         Cursor.lockState = CursorLockMode.Confined; // keep confined in the game window
+        Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
 
         // Camera
@@ -80,6 +86,7 @@ public class LookAndStepController : MonoBehaviour
         {
             stepLeftAction.action.Enable();
             stepLeftAction.action.performed += OnStepLeft; // subscription service, see A4 from GETXR
+            stepLeftAction.action.performed += OnStepLeft;
         }
         if (stepRightAction != null)
         {
@@ -109,11 +116,13 @@ public class LookAndStepController : MonoBehaviour
         Look();
         UpdateTilt();
         UpdateFov();
+        HandleGravity(); // Controleer of de speler moet vallen of op de grond staat
     }
 
     private void LateUpdate()
     {
         // Smoothly slide the player to the new step position
+        // Smoothly slide the player to the new step / fall position
         transform.position = Vector3.SmoothDamp(transform.position, targetPosition, ref positionVelocity, movementSmoothTime);
         // once again, SmoothDamp is similar to Lerp but way more effect on these small switches
     }
@@ -155,10 +164,11 @@ public class LookAndStepController : MonoBehaviour
         targetTilt = -side * maxTilt;
 
         Vector3 dir = transform.forward;
-        Vector3 origin = targetPosition + Vector3.up * 0.9f;
+        Vector3 origin = targetPosition + Vector3.up * 0.5f;
 
         int mask = Physics.AllLayers & ~ignoreLayers.value;
 
+        // Check of we tegen een muur aan lopen voor we een stap zetten
         if (Physics.Raycast(origin, dir, out RaycastHit hit, stepRayDistance, mask, QueryTriggerInteraction.Ignore))
         {
             float allowed = Mathf.Max(0f, hit.distance - 0.3f);
@@ -167,6 +177,27 @@ public class LookAndStepController : MonoBehaviour
         else
         {
             targetPosition += dir * stepDistance;
+        }
+    }
+
+    private void HandleGravity()
+    {
+        int mask = Physics.AllLayers & ~ignoreLayers.value;
+        // Schiet een ray omlaag vanaf de speler om te kijken of er grond is
+        Vector3 rayOrigin = targetPosition + Vector3.up * 0.2f;
+
+        if (Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, 1.5f, mask, QueryTriggerInteraction.Ignore))
+        {
+            // Er is grond! Reset valssnelheid en zet de Y-positie netjes op de grondhoogte
+            currentFallVelocity = 0f;
+            targetPosition.y = hit.point.y;
+        }
+        else
+        {
+            // Geen grond onder ons: voer zwaartekracht uit
+            currentFallVelocity += gravity * Time.deltaTime;
+            currentFallVelocity = Mathf.Min(currentFallVelocity, maxFallSpeed);
+            targetPosition.y -= currentFallVelocity * Time.deltaTime;
         }
     }
 
