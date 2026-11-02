@@ -22,6 +22,11 @@ public class LookAndStepController : MonoBehaviour
     [Tooltip("How fast the player slides to the new step position")]
     [SerializeField] private float movementSmoothTime = 0.08f;
 
+    [Header("Gravity & Grounding")]
+    [SerializeField] private float gravity = 15f;
+    [SerializeField] private float maxFallSpeed = 20f;
+    private float currentFallVelocity;
+
     [Header("Layer Masks to Ignore")]
     [SerializeField] private LayerMask ignoreLayers;
 
@@ -54,20 +59,24 @@ public class LookAndStepController : MonoBehaviour
     private Vector3 targetPosition;
     private Vector3 positionVelocity;
 
+    // Walking Sound class
+    private WalkingSound walkingSound;
+
     private Camera cam;
 
     private void Awake()
     {
+        // Init methods from other class
+        walkingSound = GetComponent<WalkingSound>();
+
         // Cursor
-        Cursor.visible = false; // disable visible cursor
-        Cursor.lockState = CursorLockMode.Confined; // keep confined in the game window
+        Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
 
         // Camera
         if (viewCamera == null && Camera.main != null) viewCamera = Camera.main.transform;
 
         cam = viewCamera != null ? viewCamera.GetComponent<Camera>() : GetComponentInChildren<Camera>();
-        //               if view camera is not null, set the camera to the child of the parent (the player)
         if (cam != null) cam.fieldOfView = baseFov;
 
         targetPosition = transform.position;
@@ -79,7 +88,7 @@ public class LookAndStepController : MonoBehaviour
         if (stepLeftAction != null)
         {
             stepLeftAction.action.Enable();
-            stepLeftAction.action.performed += OnStepLeft; // subscription service, see A4 from GETXR
+            stepLeftAction.action.performed += OnStepLeft;
         }
         if (stepRightAction != null)
         {
@@ -109,20 +118,19 @@ public class LookAndStepController : MonoBehaviour
         Look();
         UpdateTilt();
         UpdateFov();
+        HandleGravity(); // Zwaartekracht continu controleren en toepassen
     }
 
     private void LateUpdate()
     {
-        // Smoothly slide the player to the new step position
+        // Smoothly slide the player to the new step / fall position
         transform.position = Vector3.SmoothDamp(transform.position, targetPosition, ref positionVelocity, movementSmoothTime);
-        // once again, SmoothDamp is similar to Lerp but way more effect on these small switches
     }
 
     private void Look()
     {
         Vector2 rawLook = lookAction.action.ReadValue<Vector2>();
 
-        // Smooth the mouse input to remove jitter
         smoothedLook = Vector2.SmoothDamp(smoothedLook, rawLook, ref lookVelocity, lookSmoothing);
 
         transform.Rotate(Vector3.up * smoothedLook.x * lookSensitivity);
@@ -130,7 +138,6 @@ public class LookAndStepController : MonoBehaviour
         pitch -= smoothedLook.y * lookSensitivity;
         pitch = Mathf.Clamp(pitch, -maxPitch, maxPitch);
 
-        // Apply tilt smoothly
         currentTilt = Mathf.SmoothDamp(currentTilt, targetTilt, ref tiltVelocity, tiltSmoothTime);
 
         viewCamera.transform.localRotation = Quaternion.Euler(pitch, 0f, currentTilt);
@@ -168,11 +175,36 @@ public class LookAndStepController : MonoBehaviour
         {
             targetPosition += dir * stepDistance;
         }
+
+        if (walkingSound != null)
+        {
+            walkingSound.Footsteps();
+        }
+    }
+
+    private void HandleGravity()
+    {
+        int mask = Physics.AllLayers & ~ignoreLayers.value;
+        // Raycast omlaag vanaf de targetPosition om de vloer te vinden
+        Vector3 rayOrigin = targetPosition + Vector3.up * 0.2f;
+
+        if (Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, 1.5f, mask, QueryTriggerInteraction.Ignore))
+        {
+            // Speler staat op de grond
+            currentFallVelocity = 0f;
+            targetPosition.y = hit.point.y; // Snap exact naar de vloerhoogte
+        }
+        else
+        {
+            // Geen grond onder ons -> vallen!
+            currentFallVelocity += gravity * Time.deltaTime;
+            currentFallVelocity = Mathf.Min(currentFallVelocity, maxFallSpeed);
+            targetPosition.y -= currentFallVelocity * Time.deltaTime;
+        }
     }
 
     private void UpdateTilt()
     {
-        // If a button is currently held down, tilt. Otherwise, return to center.
         if (stepLeftAction.action.IsPressed())
         {
             targetTilt = maxTilt;
@@ -184,19 +216,16 @@ public class LookAndStepController : MonoBehaviour
         else
         {
             targetTilt = 0f;
-            // TODO: Maybe add the timer again for keeping the camera tilted for 3 seconds
         }
     }
 
     private void UpdateFov()
     {
         fovBoost = Mathf.MoveTowards(fovBoost, 0f, Time.deltaTime * fovBoostPerFastClick * 1.5f);
-        // SO to GETXR assignment A6
 
         if (cam != null)
         {
             float targetFov = baseFov + fovBoost;
-            // SmoothDamp once again, see above.
             cam.fieldOfView = Mathf.SmoothDamp(cam.fieldOfView, targetFov, ref fovVelocity, fovSmoothTime);
         }
     }
