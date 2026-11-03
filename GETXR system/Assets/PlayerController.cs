@@ -12,10 +12,10 @@ public class LookAndStepController : MonoBehaviour
     [Header("Look")]
     [SerializeField] private float lookSensitivity = 0.1f;
     [SerializeField] private float maxPitch = 80f;
-    [Tooltip("Smooths out mouse jitter. Higher = snappier, Lower = smoother")]
+    [Tooltip("Smooths out mouse jitter. Lower is smoother")]
     [SerializeField] private float lookSmoothing = 0.05f;
 
-    [Header("Step / Walk")]
+    [Header("Walking")]
     [SerializeField] private Transform viewCamera;
     [SerializeField] private float stepDistance = 0.75f;
     [SerializeField] private float stepCooldown = 0.1f;
@@ -146,7 +146,7 @@ public class LookAndStepController : MonoBehaviour
 
         targetTilt = -side * maxTilt;
 
-        // Start een nieuwe stap in de richting waar we naartoe kijken
+        // make new stap with transform instead of raycast
         moveTargetDirection = transform.forward;
         remainingStepDistance = stepDistance;
 
@@ -160,7 +160,7 @@ public class LookAndStepController : MonoBehaviour
     {
         Vector3 finalMoveVelocity = Vector3.zero;
 
-        // 1. Bereken de stap-beweging (horizontaal)
+        // Calculate step movement
         if (remainingStepDistance > 0f)
         {
             float moveThisFrame = movementSpeed * Time.deltaTime;
@@ -170,10 +170,10 @@ public class LookAndStepController : MonoBehaviour
             remainingStepDistance -= moveThisFrame;
         }
 
-        // 2. Bereken de zwaartekracht (verticaal)
+        // Calculate da gravity
         if (characterController.isGrounded)
         {
-            verticalVelocity = -0.5f; // Kleine constante druk naar beneden om grounded te blijven
+            verticalVelocity = -0.5f; // to stay on the ground instead of the 2f
         }
         else
         {
@@ -182,8 +182,6 @@ public class LookAndStepController : MonoBehaviour
 
         finalMoveVelocity.y += verticalVelocity * Time.deltaTime;
 
-        // 3. Vertel de Character Controller om de verplaatsing uit te voeren. 
-        // Dit handelt AUTOMATISCH alle botsingen met muren en trappen af!
         characterController.Move(finalMoveVelocity);
     }
 
