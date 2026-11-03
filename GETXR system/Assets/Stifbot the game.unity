@@ -23,7 +23,7 @@ RenderSettings:
   m_AmbientSkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
   m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
-  m_AmbientIntensity: 0.64
+  m_AmbientIntensity: 1.65
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.41960785, g: 0.57741606, b: 0.627451, a: 1}
   m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
@@ -735,6 +735,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7918335002988649766, guid: 3841438994a95ab4d8041d9e6810ed02, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: d14f31e6a47435547a9614f4661bbda0, type: 2}
     - target: {fileID: 919132149155446097, guid: 3841438994a95ab4d8041d9e6810ed02, type: 3}
       propertyPath: m_Name
       value: Eviorment 2.0 M5
@@ -1579,8 +1583,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 18.026352, y: 29.871937, z: 18.164322}
-  m_Center: {x: 33.279568, y: -8.1914425, z: -7.741478}
+  m_Size: {x: 8.5948105, y: 30.094393, z: 18.164322}
+  m_Center: {x: 30.676468, y: -8.3026705, z: -7.741478}
 --- !u!4 &1737743599
 Transform:
   m_ObjectHideFlags: 0
