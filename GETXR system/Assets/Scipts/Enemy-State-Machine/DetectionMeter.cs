@@ -17,7 +17,10 @@ public class DetectionMeter : MonoBehaviour
     [Tooltip("How quickly the meter drains when the player leaves sight")]
     public float drainSpeed = 0.5f;
 
-
+    public void ResetMeter()
+    {
+        CurrentDetection = 0f;
+    }
     // Important to know, the meter is from 0 - 1
     public float CurrentDetection { get; private set; } = 0f;
     //                                      ^-- the setters may only be changed from within
