@@ -1,0 +1,107 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &9199881319671192280
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1010082389060062199, guid: e5c29e9c4d9d7f049a226ed2e5eff36b, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 8.76
+      objectReference: {fileID: 0}
+    - target: {fileID: 5957296252761357041, guid: e5c29e9c4d9d7f049a226ed2e5eff36b, type: 3}
+      propertyPath: m_RenderingLayers
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7387187602640403289, guid: e5c29e9c4d9d7f049a226ed2e5eff36b, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 4.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7387187602640403289, guid: e5c29e9c4d9d7f049a226ed2e5eff36b, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7387187602640403289, guid: e5c29e9c4d9d7f049a226ed2e5eff36b, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -3.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 7387187602640403289, guid: e5c29e9c4d9d7f049a226ed2e5eff36b, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7387187602640403289, guid: e5c29e9c4d9d7f049a226ed2e5eff36b, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7387187602640403289, guid: e5c29e9c4d9d7f049a226ed2e5eff36b, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7387187602640403289, guid: e5c29e9c4d9d7f049a226ed2e5eff36b, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7387187602640403289, guid: e5c29e9c4d9d7f049a226ed2e5eff36b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7387187602640403289, guid: e5c29e9c4d9d7f049a226ed2e5eff36b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7387187602640403289, guid: e5c29e9c4d9d7f049a226ed2e5eff36b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7642469558762534596, guid: e5c29e9c4d9d7f049a226ed2e5eff36b, type: 3}
+      propertyPath: m_Type
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7642469558762534596, guid: e5c29e9c4d9d7f049a226ed2e5eff36b, type: 3}
+      propertyPath: m_Range
+      value: 47.649002
+      objectReference: {fileID: 0}
+    - target: {fileID: 7642469558762534596, guid: e5c29e9c4d9d7f049a226ed2e5eff36b, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7642469558762534596, guid: e5c29e9c4d9d7f049a226ed2e5eff36b, type: 3}
+      propertyPath: m_Intensity
+      value: 200
+      objectReference: {fileID: 0}
+    - target: {fileID: 7642469558762534596, guid: e5c29e9c4d9d7f049a226ed2e5eff36b, type: 3}
+      propertyPath: m_SpotAngle
+      value: 179
+      objectReference: {fileID: 0}
+    - target: {fileID: 7642469558762534596, guid: e5c29e9c4d9d7f049a226ed2e5eff36b, type: 3}
+      propertyPath: m_Lightmapping
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 7642469558762534596, guid: e5c29e9c4d9d7f049a226ed2e5eff36b, type: 3}
+      propertyPath: m_InnerSpotAngle
+      value: 49.87066
+      objectReference: {fileID: 0}
+    - target: {fileID: 7642469558762534596, guid: e5c29e9c4d9d7f049a226ed2e5eff36b, type: 3}
+      propertyPath: m_BounceIntensity
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7642469558762534596, guid: e5c29e9c4d9d7f049a226ed2e5eff36b, type: 3}
+      propertyPath: m_RenderingLayerMask
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7642469558762534596, guid: e5c29e9c4d9d7f049a226ed2e5eff36b, type: 3}
+      propertyPath: m_UseColorTemperature
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7912647870908244451, guid: e5c29e9c4d9d7f049a226ed2e5eff36b, type: 3}
+      propertyPath: m_Name
+      value: Lanternpaal Variant
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: e5c29e9c4d9d7f049a226ed2e5eff36b, type: 3}

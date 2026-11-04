@@ -1,75 +1,114 @@
-using UnityEngine;
 using System.Collections;
-using UnityEngine.AI;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
-    public static GameManager Instance;
-
-    [Header("Instellingen")]
-    public Transform playerSpawnPoint;
-    public Transform enemySpawnPoint;
-    public float respawnDelay = 2f;
-
-    [Header("Camera's")]
-    public GameObject normalPlayerCamera;
-    public GameObject jumpscareCamera;
+    public static GameManager Instance { get; private set; }
 
     private void Awake()
     {
-        if (Instance == null) Instance = this;
-        else Destroy(gameObject);
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
 
+    [Header("Camera Settings")]
+    [SerializeField] private GameObject normalPlayerCamera;
+    [SerializeField] private GameObject jumpscareCamera;
+
+    [Header("Jumpscare Audio")]
+    [SerializeField] private AudioSource jumpscareAudioSource;
+    [SerializeField] private AudioClip jumpscareSound;
+
+    [Header("Respawn Settings")]
+    [SerializeField] private float respawnDelay = 2f;
+    [SerializeField] private Transform playerSpawnPoint;
+    [SerializeField] private Transform enemySpawnPoint; // <-- HIER IS HET ENEMY SPAWN POINT
+
     public void TriggerRespawn(GameObject player, GameObject enemy)
+    {
+        TriggerJumpscare(player, enemy);
+    }
+
+    public void TriggerJumpscare(GameObject player, GameObject enemy)
     {
         StartCoroutine(JumpscareAndRespawn(player, enemy));
     }
 
     private IEnumerator JumpscareAndRespawn(GameObject player, GameObject enemy)
     {
-        // 1. Camera's wisselen
+        // 1. Wissel camera's
         if (normalPlayerCamera != null) normalPlayerCamera.SetActive(false);
         if (jumpscareCamera != null) jumpscareCamera.SetActive(true);
 
-        // Zet de speler tijdelijk uit
-        player.SetActive(false);
-
-        // 2. Wacht voor de jumpscare
-        yield return new WaitForSeconds(respawnDelay);
-
-        // 3. Camera's terugzetten
-        if (jumpscareCamera != null) jumpscareCamera.SetActive(false);
-        if (normalPlayerCamera != null) normalPlayerCamera.SetActive(true);
-
-        // 4. Verplaats de speler VEILIG (met CharacterController check)
-        CharacterController charController = player.GetComponent<CharacterController>();
-        if (charController != null) charController.enabled = false; // Zet uit voor teleport
-
-        player.transform.position = playerSpawnPoint.position;
-        player.transform.rotation = playerSpawnPoint.rotation;
-
-        if (charController != null) charController.enabled = true;  // Zet weer aan
-
-        // 5. Verplaats de robot VEILIG met agent.Warp()
-        if (enemy != null && enemySpawnPoint != null)
+        // Bevries de robot en stop direct zijn audio
+        if (enemy != null)
         {
-            NavMeshAgent agent = enemy.GetComponent<NavMeshAgent>();
-            NavMeshMover mover = enemy.GetComponent<NavMeshMover>();
-
-            if (mover != null) mover.Stop();
-
-            if (agent != null)
+            EnemyStateMachine enemyScript = enemy.GetComponent<EnemyStateMachine>();
+            if (enemyScript != null)
             {
-                // GEBRUIK WARP IN PLAATS VAN TRANSFORM.POSITION!
-                agent.Warp(enemySpawnPoint.position);
-
-                // Zet ook direct de rotatie goed op de parent
-                enemy.transform.rotation = enemySpawnPoint.rotation;
+                enemyScript.FreezeForJumpscare();
             }
         }
 
-        // 6. Zet de speler weer aan (zorg dat je speler-script geen extra vertraging heeft in Start)
-        player.SetActive(true);
+        // Speel het jumpscare geluid af
+        if (jumpscareAudioSource != null && jumpscareSound != null)
+        {
+            jumpscareAudioSource.PlayOneShot(jumpscareSound);
+        }
+
+        // Zet de speler tijdelijk uit
+        if (player != null) player.SetActive(false);
+
+        // 2. Wacht tot de jumpscare-vertraging voorbij is
+        yield return new WaitForSeconds(respawnDelay);
+
+        // --- VERPLAATS DE SPELER NAAR ZIJN SPAWNPOINT ---
+        if (player != null)
+        {
+            CharacterController charController = player.GetComponent<CharacterController>();
+            if (charController != null) charController.enabled = false;
+
+            if (playerSpawnPoint != null)
+            {
+                player.transform.position = playerSpawnPoint.position;
+                player.transform.rotation = playerSpawnPoint.rotation;
+            }
+
+            if (charController != null) charController.enabled = true;
+        }
+
+        // --- VERPLAATS DE ROBOT NAAR ZIJN EIGEN SPAWNPOINT EN RESET HEM ---
+        if (enemy != null)
+        {
+            EnemyStateMachine enemyScript = enemy.GetComponent<EnemyStateMachine>();
+            if (enemyScript != null)
+            {
+                if (enemySpawnPoint != null)
+                {
+                    enemyScript.ResetToSpawn(enemySpawnPoint.position);
+                }
+                else
+                {
+                    enemyScript.UnfreezeEnemy(); // Fallback als je vergeten bent een spawnpoint in te stellen
+                }
+            }
+        }
+
+        // Zet de camera's en speler weer terug
+        if (jumpscareCamera != null) jumpscareCamera.SetActive(false);
+        if (normalPlayerCamera != null) normalPlayerCamera.SetActive(true);
+        if (player != null) player.SetActive(true);
+
+        // back to menu
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex - 1);
     }
 }
