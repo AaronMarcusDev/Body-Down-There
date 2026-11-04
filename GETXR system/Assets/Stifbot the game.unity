@@ -692,7 +692,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 1
-  m_Volume: 1
+  m_Volume: 0.604
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -794,7 +794,8 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 3eea97b83c041cf49b7ffb7907647ac0, type: 3}
   - {fileID: 8300000, guid: 6c863195ca0c5f640952b1e0d8addffd, type: 3}
   - {fileID: 8300000, guid: b15ab15cf15b4a14b80eaf8eb8c7f763, type: 3}
-  outsideAreas: []
+  outsideAreas:
+  - {fileID: 1824627830}
   Player: {fileID: 1334609344}
 --- !u!1 &496716661
 GameObject:
@@ -911,8 +912,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 308.53857, y: 42.432503, z: 395.75742}
-  m_Center: {x: -261.55518, y: 15.769085, z: -191.90633}
+  m_Size: {x: 303.20255, y: 42.432503, z: 395.75742}
+  m_Center: {x: -264.22318, y: 15.769085, z: -191.90633}
 --- !u!1 &578354471
 GameObject:
   m_ObjectHideFlags: 0
@@ -964,8 +965,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 351.92792, y: 43.236195, z: 389.45682}
-  m_Center: {x: 97.80936, y: 16.089708, z: -188.75603}
+  m_Size: {x: 347.15137, y: 43.236195, z: 389.45682}
+  m_Center: {x: 100.19763, y: 16.089708, z: -188.75603}
 --- !u!1 &623821398 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -7640558969779515294, guid: 3841438994a95ab4d8041d9e6810ed02, type: 3}
@@ -1852,8 +1853,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 28.87793, y: 41.06876, z: 356.3093}
-  m_Center: {x: -92.12421, y: 14.644739, z: -198.65779}
+  m_Size: {x: 51.216415, y: 41.06876, z: 356.3093}
+  m_Center: {x: -92.42608, y: 14.644739, z: -198.65779}
 --- !u!1001 &1418874951
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2036,7 +2037,7 @@ AudioSource:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0
+      value: 1
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -2396,8 +2397,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 343.68848, y: 16.041275, z: 244.89748}
-  m_Center: {x: -14.619415, y: -28.697887, z: 5.020256}
+  m_Size: {x: 343.68848, y: 20.372034, z: 244.89748}
+  m_Center: {x: -14.619415, y: -26.532509, z: 5.020256}
 --- !u!4 &1824627831
 Transform:
   m_ObjectHideFlags: 0
@@ -2488,7 +2489,7 @@ AudioSource:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0
+      value: 1
       inSlope: 0
       outSlope: 0
       tangentMode: 0

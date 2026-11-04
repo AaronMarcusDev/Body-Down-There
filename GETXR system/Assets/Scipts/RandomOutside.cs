@@ -13,6 +13,7 @@ public class RandomOutside : MonoBehaviour
 
     void Update()
     {
+        Debug.Log(timer);
         if (Player == null) return;
 
         // Check of de speler in ÉÉN van de buiten-gebieden is
