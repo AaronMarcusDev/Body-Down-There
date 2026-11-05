@@ -20,7 +20,6 @@ public class GameManager : MonoBehaviour
 
     [Header("Camera Settings")]
     [SerializeField] private GameObject normalPlayerCamera;
-    [SerializeField] private GameObject jumpscareCamera;
 
     [Header("Jumpscare Audio")]
     [SerializeField] private AudioSource jumpscareAudioSource;
@@ -28,34 +27,28 @@ public class GameManager : MonoBehaviour
 
     [Header("Respawn Settings")]
     [SerializeField] private float respawnDelay = 2f;
-    [SerializeField] private Transform playerSpawnPoint;
-    [SerializeField] private Transform enemySpawnPoint; // <-- HIER IS HET ENEMY SPAWN POINT
+    [SerializeField] private Transform playerSpawnPoint; // Waar de speler zelf weer tot leven komt
 
-    public void TriggerRespawn(GameObject player, GameObject enemy)
+    // Wordt aangeroepen door de EnemyCatchHandler van de robot die je grijpt
+    public void TriggerJumpscare(GameObject player, EnemyCatchHandler enemyHandler)
     {
-        TriggerJumpscare(player, enemy);
+        StartCoroutine(JumpscareAndRespawnRoutine(player, enemyHandler));
     }
 
-    public void TriggerJumpscare(GameObject player, GameObject enemy)
+    private IEnumerator JumpscareAndRespawnRoutine(GameObject player, EnemyCatchHandler enemyHandler)
     {
-        StartCoroutine(JumpscareAndRespawn(player, enemy));
-    }
+        GameObject specificJumpscareCamera = null;
+        Transform specificRobotSpawn = null;
 
-    private IEnumerator JumpscareAndRespawn(GameObject player, GameObject enemy)
-    {
-        // 1. Wissel camera's
-        if (normalPlayerCamera != null) normalPlayerCamera.SetActive(false);
-        if (jumpscareCamera != null) jumpscareCamera.SetActive(true);
-
-        // Bevries de robot en stop direct zijn audio
-        if (enemy != null)
+        if (enemyHandler != null)
         {
-            EnemyStateMachine enemyScript = enemy.GetComponent<EnemyStateMachine>();
-            if (enemyScript != null)
-            {
-                enemyScript.FreezeForJumpscare();
-            }
+            specificJumpscareCamera = enemyHandler.RobotJumpscareCamera;
+            specificRobotSpawn = enemyHandler.RobotSpawnPoint;
         }
+
+        // 1. Wissel naar de unieke jumpscare-camera van deze specifieke robot
+        if (normalPlayerCamera != null) normalPlayerCamera.SetActive(false);
+        if (specificJumpscareCamera != null) specificJumpscareCamera.SetActive(true);
 
         // Speel het jumpscare geluid af
         if (jumpscareAudioSource != null && jumpscareSound != null)
@@ -69,7 +62,7 @@ public class GameManager : MonoBehaviour
         // 2. Wacht tot de jumpscare-vertraging voorbij is
         yield return new WaitForSeconds(respawnDelay);
 
-        // --- VERPLAATS DE SPELER NAAR ZIJN SPAWNPOINT ---
+        // --- RESPAWN SPELER ---
         if (player != null)
         {
             CharacterController charController = player.GetComponent<CharacterController>();
@@ -84,29 +77,17 @@ public class GameManager : MonoBehaviour
             if (charController != null) charController.enabled = true;
         }
 
-        // --- VERPLAATS DE ROBOT NAAR ZIJN EIGEN SPAWNPOINT EN RESET HEM ---
-        if (enemy != null)
+        // --- RESET DE AANVALLENDE ROBOT ---
+        if (enemyHandler != null && specificRobotSpawn != null)
         {
-            EnemyStateMachine enemyScript = enemy.GetComponent<EnemyStateMachine>();
-            if (enemyScript != null)
-            {
-                if (enemySpawnPoint != null)
-                {
-                    enemyScript.ResetToSpawn(enemySpawnPoint.position);
-                }
-                else
-                {
-                    enemyScript.UnfreezeEnemy(); // Fallback als je vergeten bent een spawnpoint in te stellen
-                }
-            }
+            enemyHandler.ResetEnemy(specificRobotSpawn.position);
         }
 
-        // Zet de camera's en speler weer terug
-        if (jumpscareCamera != null) jumpscareCamera.SetActive(false);
+        // 3. Zet de camera's en speler weer terug naar de normale gameplay
+        if (specificJumpscareCamera != null) specificJumpscareCamera.SetActive(false);
         if (normalPlayerCamera != null) normalPlayerCamera.SetActive(true);
         if (player != null) player.SetActive(true);
 
-        // back to menu
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex - 1);

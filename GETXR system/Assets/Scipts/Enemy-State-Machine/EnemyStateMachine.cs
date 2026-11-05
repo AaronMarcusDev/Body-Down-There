@@ -22,15 +22,15 @@ public class EnemyStateMachine : MonoBehaviour
     private AudioSource _audioSource;
 
     [Header("Audio Settings")]
-    [SerializeField] private AudioClip passiveSound; // Geluid voor Patrol, Alert en Investigate
-    [SerializeField] private AudioClip chaseSound;   // Geluid voor Attack
+    [SerializeField] private AudioClip passiveSound;
+    [SerializeField] private AudioClip chaseSound;
 
     [Header("Patrol Settings")]
-    [SerializeField] private Transform[] patrolWaypoints; // Sleep hier je waypoints in vanuit de Inspector
+    [SerializeField] private Transform[] patrolWaypoints;
     private int currentWaypointIndex = 0;
     [SerializeField] private float waypointReachDistance = 1.5f;
 
-    // Investigate settings
+    [Header("Investigate Settings")]
     [SerializeField] private float investigateWaitTime = 3.5f;
     private Vector3 _investigatePosition;
     private float _investigateTimer;
@@ -41,7 +41,6 @@ public class EnemyStateMachine : MonoBehaviour
 
     private void Awake()
     {
-        // Retrieve the components
         _meter = GetComponent<DetectionMeter>();
         _vision = GetComponent<VisionSensor>();
         _mover = GetComponent<NavMeshMover>();
@@ -50,10 +49,8 @@ public class EnemyStateMachine : MonoBehaviour
 
     private void Start()
     {
-        // Start direct met het passive geluid als dat is ingesteld
         PlayPassiveSound();
 
-        // Als er waypoints zijn, begin direct met patrouilleren
         if (patrolWaypoints != null && patrolWaypoints.Length > 0)
         {
             MoveToNextWaypoint();
@@ -62,9 +59,8 @@ public class EnemyStateMachine : MonoBehaviour
 
     private void Update()
     {
-        if (isJumpscareActive) return; // Als de jumpscare bezig is, doet de robot niets meer
+        if (isJumpscareActive) return;
 
-        // Als we net zijn gerespawned, telt deze timer af om audio-glitches en direct aanvallen te voorkomen
         if (respawnCooldownTimer > 0f)
         {
             respawnCooldownTimer -= Time.deltaTime;
@@ -76,7 +72,6 @@ public class EnemyStateMachine : MonoBehaviour
 
     private void UpdateState()
     {
-        // Determine the state based on the meter
         State newState = CurrentState;
 
         if (_meter.IsAttacking)
@@ -96,49 +91,41 @@ public class EnemyStateMachine : MonoBehaviour
             newState = State.Patrol;
         }
 
-        // On state change
         if (newState != CurrentState)
         {
             State oldState = CurrentState;
             CurrentState = newState;
             Debug.Log($"<StateMachine> {name} is in de {CurrentState} state.");
 
-            // Handel audio-wissels af bij een state verandering
             HandleAudioStateChange(oldState, CurrentState);
 
             switch (CurrentState)
             {
                 case State.Patrol:
                     MoveToNextWaypoint();
-                    Debug.Log("<State> Patrol: Volgend waypoint opzoeken");
                     break;
                 case State.Alert:
                     _mover.Stop();
-                    Debug.Log("<State> Alert");
                     break;
                 case State.Investigate:
                     _investigatePosition = _vision.LastSeenPosition;
                     _investigateTimer = investigateWaitTime;
                     _mover.MoveTo(_investigatePosition);
-                    Debug.Log("<State> Investigate: Op weg naar laatste positie");
                     break;
                 case State.Attack:
-                    Debug.Log("<State> Attack");
                     break;
             }
         }
 
-        // Movement for the states
         if (CurrentState == State.Patrol)
         {
-            // Controleer of we dicht genoeg bij het huidige waypoint zijn om door te schakelen
             if (patrolWaypoints != null && patrolWaypoints.Length > 0)
             {
-                float distanceToWaypoint = Vector3.Distance(transform.position, patrolWaypoints[currentWaypointIndex].position);
+                Vector2 currentPos2D = new Vector2(transform.position.x, transform.position.z);
+                Vector2 targetPos2D = new Vector2(patrolWaypoints[currentWaypointIndex].position.x, patrolWaypoints[currentWaypointIndex].position.z);
 
-                if (distanceToWaypoint <= waypointReachDistance)
+                if (Vector2.Distance(currentPos2D, targetPos2D) <= waypointReachDistance)
                 {
-                    // Pak het volgende waypoint in een eindeloze lus (%)
                     currentWaypointIndex = (currentWaypointIndex + 1) % patrolWaypoints.Length;
                     MoveToNextWaypoint();
                 }
@@ -158,24 +145,16 @@ public class EnemyStateMachine : MonoBehaviour
             if (distanceToTarget <= 1.5f)
             {
                 _mover.Stop();
-
                 _investigateTimer -= Time.deltaTime;
-                if (_investigateTimer <= 0f)
-                {
-                    // Timer is op
-                }
             }
         }
     }
 
     private void MoveToNextWaypoint()
     {
-        if (patrolWaypoints != null && patrolWaypoints.Length > 0)
+        if (patrolWaypoints != null && patrolWaypoints.Length > 0 && _mover != null)
         {
-            if (_mover != null)
-            {
-                _mover.MoveTo(patrolWaypoints[currentWaypointIndex].position);
-            }
+            _mover.MoveTo(patrolWaypoints[currentWaypointIndex].position);
         }
     }
 
@@ -183,7 +162,6 @@ public class EnemyStateMachine : MonoBehaviour
     {
         if (_audioSource == null) return;
 
-        // Als we naar Attack gaan, spelen we het chase-geluid af
         if (newState == State.Attack)
         {
             if (chaseSound != null)
@@ -194,7 +172,6 @@ public class EnemyStateMachine : MonoBehaviour
                 _audioSource.Play();
             }
         }
-        // Als we vanuit Attack terugkeren naar een Passive state
         else if (oldState == State.Attack)
         {
             PlayPassiveSound();
@@ -214,12 +191,11 @@ public class EnemyStateMachine : MonoBehaviour
         }
     }
 
-    // --- FUNCTIES AANGEROEPEN DOOR DE GAMEMANAGER ---
+    // Aangeroepen door de EnemyCatchHandler
     public void FreezeForJumpscare()
     {
         isJumpscareActive = true;
 
-        // Stop alle audiobronnen op de robot direct
         if (_audioSource != null) _audioSource.Stop();
 
         AudioSource[] allAudioSources = GetComponentsInChildren<AudioSource>();
@@ -231,18 +207,14 @@ public class EnemyStateMachine : MonoBehaviour
         if (_mover != null) _mover.Stop();
     }
 
+    // Aangeroepen door de EnemyCatchHandler bij respawn
     public void ResetToSpawn(Vector3 spawnPosition)
     {
         isJumpscareActive = false;
-        respawnCooldownTimer = 1.5f; // Voorkomt dat de robot direct na respawn triggert of geluid lekt
+        respawnCooldownTimer = 1.5f;
 
-        // Verplaats de robot naar zijn eigen spawnpoint
-        transform.position = spawnPosition;
-
-        // Zet de state weer terug naar Patrol
         CurrentState = State.Patrol;
 
-        // Stop beweging, start passive geluid en laat hem direct weer zijn ronde lopen
         if (_mover != null) _mover.Stop();
         PlayPassiveSound();
         MoveToNextWaypoint();
