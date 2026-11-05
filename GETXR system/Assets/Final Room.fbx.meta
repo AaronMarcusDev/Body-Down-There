@@ -3,7 +3,27 @@ guid: 255828be3b5be2542895dd056dba83df
 ModelImporter:
   serializedVersion: 24000
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: BodyUpThereMetalBpx
+    second: {fileID: 2100000, guid: 2840d0ef534cf4e48bb52e09f3244684, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Floor
+    second: {fileID: 2100000, guid: f218230ba7a12e94fad59f611a5ee6b8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: TableMetal
+    second: {fileID: 2100000, guid: a91dc05c3fd82444c8507941bfdbdbc5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Wall
+    second: {fileID: 2100000, guid: 3bc0e2798fde25e498cfb428a39d0bcc, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
