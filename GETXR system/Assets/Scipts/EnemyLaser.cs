@@ -1,58 +1,72 @@
-using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
-public class EnemyLaser : MonoBehaviour
+public class ScreenRedEffect : MonoBehaviour
 {
-    public Transform player;
-    public float cooldown = 3f;
-    public float beamLength = 20f;
-    public float beamWidth = 0.5f;
-    public float beamHeightOffset = 0f;
-    public float beamHeight = 1.5f;
+    [Header("UI Reference")]
+    [Tooltip("Sleep hier je UI Panel naartoe dat rood moet worden.")]
+    public Image redOverlay;
 
-    [Tooltip("Layers the laser beam will pass through and NOT hit")]
-    public LayerMask ignoredLayers;   // ← shows as a dropdown in the Inspector
+    [Header("Instellingen")]
+    [Tooltip("Hoe lang (in seconden) het duurt voordat het scherm volledig rood is.")]
+    public float timeToFullRed = 10f;
+
+    private float currentTimer = 0f;
+    private bool isTriggered = false;
 
     void Start()
     {
-        if (player == null)
-            player = GameObject.FindGameObjectWithTag("Player").transform;
-        StartCoroutine(FireLoop());
-    }
-
-    IEnumerator FireLoop()
-    {
-        while (true)
+        if (redOverlay != null)
         {
-            // yield return new WaitForSeconds(cooldown);
-            FireLaser();
+            // Zorg dat het paneel aan het begin volledig onzichtbaar is
+            Color c = redOverlay.color;
+            c.a = 0f;
+            redOverlay.color = c;
+        }
+        else
+        {
+            Debug.LogWarning("Geen redOverlay gekoppeld aan het script!");
         }
     }
 
-    void FireLaser()
+    void Update()
     {
-        if (player == null) return;
+        if (isTriggered || redOverlay == null) return;
 
-        var laser = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        laser.name = "Laser";
-        laser.transform.position = transform.position;
+        // Tel de tijd op
+        currentTimer += Time.deltaTime;
+        
+        // Bereken hoe ver we zijn (van 0.0 tot 1.0)
+        float progress = Mathf.Clamp01(currentTimer / timeToFullRed);
 
-        Vector3 aimFrom = transform.position + Vector3.up * beamHeightOffset;
-        Vector3 dir = (player.position - aimFrom).normalized;
-        laser.transform.rotation = Quaternion.LookRotation(dir);
+        // Pas de doorzichtigheid (alpha) van het rode paneel aan
+        Color c = redOverlay.color;
+        c.a = progress;
+        redOverlay.color = c;
 
-        laser.transform.localScale = new Vector3(beamWidth, beamHeight, beamLength);
+        // Als de tijd om is en het scherm dus vol rood is
+        if (currentTimer >= timeToFullRed)
+        {
+            isTriggered = true;
+            HandleGameOver();
+        }
+    }
 
-        laser.transform.position = aimFrom + dir * (beamLength / 2f);
+    void HandleGameOver()
+    {
+        Debug.Log("Scherm is volledig rood! Level wordt herladen.");
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
 
-        laser.GetComponent<BoxCollider>().isTrigger = true;
-
-        var mr = laser.GetComponent<MeshRenderer>();
-        mr.material.color = Color.red;
-
-        // Pass the ignore mask into the laser
-        laser.AddComponent<Laser>().Init(ignoredLayers);
-
-        Destroy(laser, 0.3f);
+        int previousSceneIndex = SceneManager.GetActiveScene().buildIndex - 1;
+        if (previousSceneIndex >= 0)
+        {
+            SceneManager.LoadScene(previousSceneIndex);
+        }
+        else
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
     }
 }
