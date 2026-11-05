@@ -58022,7 +58022,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7e70cdaaeabdd6d4f83c0c10f7f993b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  viewRange: 65.1
+  viewRange: 57.1
   fieldOfView: 360
   playerLayer:
     serializedVersion: 2
