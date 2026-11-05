@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -59,6 +60,9 @@ public class LookAndStepController : MonoBehaviour
     private CharacterController characterController;
     private WalkingSound walkingSound;
     private Camera cam;
+
+    // For the Metrobot
+    public event Action StepTaken;
 
     private void Awake()
     {
@@ -133,6 +137,7 @@ public class LookAndStepController : MonoBehaviour
 
     private void TakeStep(float side)
     {
+        StepTaken?.Invoke();
         float now = Time.time;
         float sinceLast = now - lastStepTime;
 
