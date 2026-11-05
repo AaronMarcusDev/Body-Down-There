@@ -1,6 +1,6 @@
 using UnityEngine;
-
-
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 // It does not function without these, which is why I require them
 [RequireComponent(typeof(VisionSensor))]
@@ -9,7 +9,6 @@ using UnityEngine;
 
 public class EnemyStateMachineSpider : MonoBehaviour
 {
-
     [Header("Animation")]
     [SerializeField] private float minStompDelay = 4f;
     [SerializeField] private float maxStompDelay = 10f;
@@ -26,10 +25,18 @@ public class EnemyStateMachineSpider : MonoBehaviour
     private VisionSensor _vision;
     private NavMeshMover _mover;
 
-    // Invesitgate settings
+    // Investigate settings
     [SerializeField] private float investigateWaitTime = 3.5f;
     private Vector3 _investigatePosition;
     private float _investigateTimer;
+
+    [Header("Attack Screen Effect")]
+    [Tooltip("Sleep hier het UI Panel naartoe dat rood moet worden.")]
+    [SerializeField] private Image redOverlay;
+    [Tooltip("Hoe lang (in seconden) de Attack state mag duren voordat het scherm volledig rood is en het level herlaadt.")]
+    [SerializeField] private float timeToFullRed = 5f;
+
+    private float _attackDangerLevel = 0f; // Loopt op in Attack, zakt daarbuiten
 
     private void Awake()
     {
@@ -40,11 +47,18 @@ public class EnemyStateMachineSpider : MonoBehaviour
 
         _animator = GetComponent<Animator>();
         ResetStompTimer();
+
+        if (redOverlay != null)
+        {
+            Color c = redOverlay.color;
+            c.a = 0f;
+            redOverlay.color = c;
+        }
     }
 
     private void ResetStompTimer()
     {
-    _stompTimer = Random.Range(minStompDelay, maxStompDelay);
+        _stompTimer = Random.Range(minStompDelay, maxStompDelay);
     }
 
     private void Update() => UpdateState();
@@ -54,7 +68,6 @@ public class EnemyStateMachineSpider : MonoBehaviour
         // Determine the state based on the meter
         State newState = CurrentState;
 
-        // I practically just convert the booleans from the DetectionMeter to an enum state
         if (_meter.IsAttacking)
         {
             newState = State.Attack;
@@ -72,10 +85,9 @@ public class EnemyStateMachineSpider : MonoBehaviour
             newState = State.Patrol;
         }
 
-        // on state change
+        // On state change
         if (newState != CurrentState)
         {
-            
             CurrentState = newState;
             Debug.Log($"<StateMachine> {name} is in the {CurrentState} state.");
 
@@ -90,9 +102,8 @@ public class EnemyStateMachineSpider : MonoBehaviour
                     Debug.Log("<State> Alert");
                     break;
                 case State.Investigate:
-                    // Save the last known position and walk there instead of continuous chasing like in attack
                     _investigatePosition = _vision.LastSeenPosition;
-                    _investigateTimer = investigateWaitTime; // Reset timer
+                    _investigateTimer = investigateWaitTime;
                     _mover.MoveTo(_investigatePosition);
                     Debug.Log("<State> Investigate");
                     break;
@@ -103,42 +114,81 @@ public class EnemyStateMachineSpider : MonoBehaviour
             _animator.SetInteger(StateHash, (int)CurrentState);
         }
 
-        // Movement for the states
+        // Movement & logic per state
         if (CurrentState == State.Attack)
         {
-            // Here the enemy does chase continuously
             if (_vision.CanSeePlayer) 
             {
                 _mover.MoveTo(_vision.LastSeenPosition);
             }
+
+            // Laat het scherm roder worden zolang we in Attack zijn
+            if (redOverlay != null)
+            {
+                _attackDangerLevel += Time.deltaTime / timeToFullRed;
+                _attackDangerLevel = Mathf.Clamp01(_attackDangerLevel);
+
+                Color c = redOverlay.color;
+                c.a = _attackDangerLevel;
+                redOverlay.color = c;
+
+                if (_attackDangerLevel >= 1f)
+                {
+                    HandleGameOver();
+                }
+            }
         }
-        else if (CurrentState == State.Investigate)
+        else
         {
-            // Check the distance to the target first
+            // Als we NIET in Attack zijn, laat het rode scherm weer geleidelijk wegtrekken naar transparant
+            if (redOverlay != null && _attackDangerLevel > 0f)
+            {
+                _attackDangerLevel -= Time.deltaTime * 1.5f; // Gaat iets sneller weg dan dat het opbouwt
+                _attackDangerLevel = Mathf.Clamp01(_attackDangerLevel);
+
+                Color c = redOverlay.color;
+                c.a = _attackDangerLevel;
+                redOverlay.color = c;
+            }
+        }
+
+        if (CurrentState == State.Investigate)
+        {
             float distanceToTarget = Vector3.Distance(transform.position, _investigatePosition);
 
             if (distanceToTarget <= 1.5f)
             {
-                _mover.Stop(); // Only stop when the enemy reached the target
-                
-                // count the timer down
+                _mover.Stop();
                 _investigateTimer -= Time.deltaTime;
-                if (_investigateTimer <= 0f)
-                {
-                    // Here the time is up, I will leave in the if statement for the readability, but if the
-                    // player is no longer visible, it will return to the patrol state eventually
-                }
             }
         }
+
         // Random stomp only while idle (Patrol)
         if (CurrentState == State.Patrol)
         {
-             _stompTimer -= Time.deltaTime;
-         if (_stompTimer <= 0f)
+            _stompTimer -= Time.deltaTime;
+            if (_stompTimer <= 0f)
+            {
+                _animator.SetTrigger(StompHash);
+                ResetStompTimer();
+            }
+        }
+    }
+
+    private void HandleGameOver()
+    {
+        Debug.Log("Attack state duurde te lang! Level herladen.");
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
+
+        int previousSceneIndex = SceneManager.GetActiveScene().buildIndex - 1;
+        if (previousSceneIndex >= 0)
         {
-              _animator.SetTrigger(StompHash);
-             ResetStompTimer();
-         }
-}
+            SceneManager.LoadScene(previousSceneIndex);
+        }
+        else
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
     }
 }
