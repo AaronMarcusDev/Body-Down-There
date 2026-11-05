@@ -45723,8 +45723,6 @@ MonoBehaviour:
   waypoints:
   - {fileID: 1278274430}
   - {fileID: 182855766}
-  - {fileID: 0}
-  - {fileID: 0}
   patrolSpeed: 5
   waitTimeAtWaypoint: 0.31
   randomWaypoints: 0
