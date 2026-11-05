@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5de3577eea8053e4380912bca1c3334a, type: 3}
   m_Name: Sparse
   m_EditorClassIdentifier: 
-  label: Straight
-  slots: 0000000000000000
+  label: Sparse
+  slots: 0100000001000000
