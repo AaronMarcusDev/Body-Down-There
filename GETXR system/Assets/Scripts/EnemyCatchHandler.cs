@@ -8,14 +8,16 @@ public class EnemyCatchHandler : MonoBehaviour
     [SerializeField] private Transform robotSpawnPoint;
 
     [Header("Catch Settings")]
-    [SerializeField] private float catchDistance = 1.8f; // Hier regel je hoe dichtbij hij moet zijn om te grijpen
+    [SerializeField] private float catchDistance = 1.8f; // the distance at which it triggers as a catch
 
+    // Public
+    public GameObject RobotJumpscareCamera => robotJumpscareCamera;
+    public Transform RobotSpawnPoint => robotSpawnPoint;
+
+    // Private
     private EnemyStateMachine stateMachine;
     private bool isCaught = false;
 
-    // Publieke properties voor de GameManager
-    public GameObject RobotJumpscareCamera => robotJumpscareCamera;
-    public Transform RobotSpawnPoint => robotSpawnPoint;
 
     private void Awake()
     {
@@ -26,13 +28,13 @@ public class EnemyCatchHandler : MonoBehaviour
     {
         if (isCaught) return;
 
-        // Als de robot een StateMachine heeft, mag hij alleen vangen als hij daadwerkelijk in de Attack-state zit
+        // If the robot has a StateMachine, it is only allowed to catch if it is in its attack state :O
         if (stateMachine != null && stateMachine.CurrentState != EnemyStateMachine.State.Attack)
         {
             return;
         }
 
-        // Zoek de speler en check de afstand
+        // Get the player from the game by its tag and check distance
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
         if (playerObj != null)
         {
@@ -47,13 +49,12 @@ public class EnemyCatchHandler : MonoBehaviour
 
     public void CatchPlayer(GameObject player)
     {
-        if (isCaught) return; // Voorkom dat hij dubbel triggert
+        if (isCaught) return; // Stop double triggers, like in GETXR A4 I believe
         isCaught = true;
 
-        // 1. Bevries deze robot
         FreezeEnemy();
 
-        // 2. Roep de GameManager aan
+        // Then the game logic
         if (GameManager.Instance != null)
         {
             GameManager.Instance.TriggerJumpscare(player, this);
@@ -69,7 +70,10 @@ public class EnemyCatchHandler : MonoBehaviour
         }
 
         NavMeshAgent agent = GetComponent<NavMeshAgent>();
-        if (agent != null) agent.isStopped = true;
+        if (agent != null)
+        {
+            agent.isStopped = true;
+        }
 
         AudioSource[] childAudios = GetComponentsInChildren<AudioSource>();
         foreach (var src in childAudios)
@@ -80,7 +84,7 @@ public class EnemyCatchHandler : MonoBehaviour
 
     public void ResetEnemy(Vector3 spawnPosition)
     {
-        isCaught = false; // Reset de vlag zodat de robot na de respawn weer kan vangen
+        isCaught = false; // We do want it to work again in another try of course
         transform.position = spawnPosition;
 
         if (stateMachine != null)

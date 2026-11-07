@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+// A really simple script that handles when a player is caught by the MetroBot
+
 public class MetronomeDeath : MonoBehaviour
 {
     private Transform playerTrans;
@@ -24,6 +26,7 @@ public class MetronomeDeath : MonoBehaviour
 
         if (distance < killDistance)
         {
+            // Important for the menu
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex - 1);

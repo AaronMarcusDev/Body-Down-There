@@ -9,24 +9,24 @@ public class ambienceSound : MonoBehaviour
 
     void Update()
     {
-        // Veiligheidscheck of er wel colliders en een speler zijn
+        // null checks
         if (Areas == null || Areas.Length == 0 || Player == null) return;
 
         Vector3 playerPos = Player.transform.position;
 
-        // Pak als beginpunt de eerste collider
+        // Start at the first collider, so we have to set it there first (just the first index of the areas)
         Vector3 closestPoint = Areas[0].ClosestPoint(playerPos);
         float minSqrDst = (closestPoint - playerPos).sqrMagnitude;
 
-        // Loop door alle andere colliders om te kijken welke het ábsoluut dichtstbij is
+        // get the closest collider by looping through them
         for (int i = 1; i < Areas.Length; i++)
         {
-            if (Areas[i] == null) continue;
+            if (Areas[i] == null) continue; // and skip the nonexistant ones ofcourse so Unity doesn't crash
 
             Vector3 point = Areas[i].ClosestPoint(playerPos);
-            float sqrDst = (point - playerPos).sqrMagnitude;
+            float sqrDst = (point - playerPos).sqrMagnitude; // distance is the magnitude here, makes sense right
 
-            // Als deze collider dichterbij is dan de vorige, slaan we deze op
+            // simple sorting algorithm basically with a distance condition
             if (sqrDst < minSqrDst)
             {
                 minSqrDst = sqrDst;
@@ -34,7 +34,7 @@ public class ambienceSound : MonoBehaviour
             }
         }
 
-        // Verplaats de ambience sound naar het dichtstbijzijnde punt van de gekozen collider
+        // Move the sound to the closest one that was just found
         transform.position = closestPoint;
     }
 }

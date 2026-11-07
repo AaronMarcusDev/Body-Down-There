@@ -3,15 +3,15 @@ using UnityEngine;
 public class ChangeFogTrigger : MonoBehaviour
 {
     [Header("Exponential Fog Instellingen")]
-    [SerializeField] private float targetFogDensity = 0.05f; // Hoe dik de mist moet worden in deze zone (probeer bijv. 0.02 tot 0.1)
-    [SerializeField] private float transitionSpeed = 2f;       // Hoe snel de mist opbouwt
+    [SerializeField] private float targetFogDensity = 0.05f; // thickness of the fog, 0.5 is already quite a lot of fog
+    [SerializeField] private float transitionSpeed = 2f; // speed at which the fog adds up
 
     private bool playerInside = false;
     private float originalFogDensity;
 
     private void Start()
     {
-        // Sla de standaard mist-dichtheid van de scène op
+        // Save the original fog so that we can alter it logically
         originalFogDensity = RenderSettings.fogDensity;
     }
 
@@ -35,12 +35,12 @@ public class ChangeFogTrigger : MonoBehaviour
     {
         if (playerInside)
         {
-            // Laat de mist langzaam toenemen tot de gewenste target density
+            // Sloooowwly add the fog with Lerp
             RenderSettings.fogDensity = Mathf.Lerp(RenderSettings.fogDensity, targetFogDensity, Time.deltaTime * transitionSpeed);
         }
         else
         {
-            // Laat de mist langzaam terugkeren naar de normale waarde als je weggaat
+            // ^-- That but the reduction of fog instead
             RenderSettings.fogDensity = Mathf.Lerp(RenderSettings.fogDensity, originalFogDensity, Time.deltaTime * transitionSpeed);
         }
     }

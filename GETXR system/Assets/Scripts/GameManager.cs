@@ -27,12 +27,12 @@ public class GameManager : MonoBehaviour
 
     [Header("Respawn Settings")]
     [SerializeField] private float respawnDelay = 2f;
-    [SerializeField] private Transform playerSpawnPoint; // Waar de speler zelf weer tot leven komt
+    [SerializeField] private Transform playerSpawnPoint;
 
-    // Wordt aangeroepen door de EnemyCatchHandler van de robot die je grijpt
+    // Being called by the EnemyCatchHandler of the robot that hit/caught you
     public void TriggerJumpscare(GameObject player, EnemyCatchHandler enemyHandler)
     {
-        StartCoroutine(JumpscareAndRespawnRoutine(player, enemyHandler));
+        StartCoroutine(JumpscareAndRespawnRoutine(player, enemyHandler)); // has to be a coroutine to not freeze the game
     }
 
     private IEnumerator JumpscareAndRespawnRoutine(GameObject player, EnemyCatchHandler enemyHandler)
@@ -46,48 +46,51 @@ public class GameManager : MonoBehaviour
             specificRobotSpawn = enemyHandler.RobotSpawnPoint;
         }
 
-        // 1. Wissel naar de unieke jumpscare-camera van deze specifieke robot
+        // Switch to the 'jumpscare camera'
         if (normalPlayerCamera != null) normalPlayerCamera.SetActive(false);
         if (specificJumpscareCamera != null) specificJumpscareCamera.SetActive(true);
 
-        // Speel het jumpscare geluid af
+        // Jumpscare audio
         if (jumpscareAudioSource != null && jumpscareSound != null)
         {
             jumpscareAudioSource.PlayOneShot(jumpscareSound);
         }
 
-        // Zet de speler tijdelijk uit
+        // Disable the player for a short moment
         if (player != null) player.SetActive(false);
 
-        // 2. Wacht tot de jumpscare-vertraging voorbij is
+        // yeild for a delay (no freezing the program here :) )
         yield return new WaitForSeconds(respawnDelay);
 
-        // --- RESPAWN SPELER ---
+        // Respawning the player
         if (player != null)
         {
-            CharacterController charController = player.GetComponent<CharacterController>();
-            if (charController != null) charController.enabled = false;
+            CharacterController charController = player.GetComponent<CharacterController>(); // retrieve player
+            if (charController != null) charController.enabled = false; // stop controls
 
+            // back to spawn
             if (playerSpawnPoint != null)
             {
                 player.transform.position = playerSpawnPoint.position;
                 player.transform.rotation = playerSpawnPoint.rotation;
             }
 
+            // enable controls again, yay
             if (charController != null) charController.enabled = true;
         }
 
-        // --- RESET DE AANVALLENDE ROBOT ---
+        // And let's not forget to reset the enemy robot as well
         if (enemyHandler != null && specificRobotSpawn != null)
         {
             enemyHandler.ResetEnemy(specificRobotSpawn.position);
         }
 
-        // 3. Zet de camera's en speler weer terug naar de normale gameplay
+        // Reset camera and player
         if (specificJumpscareCamera != null) specificJumpscareCamera.SetActive(false);
         if (normalPlayerCamera != null) normalPlayerCamera.SetActive(true);
         if (player != null) player.SetActive(true);
 
+        // important to be able to use the cursor for the menu
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex - 1);

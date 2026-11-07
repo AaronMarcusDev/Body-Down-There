@@ -16,7 +16,7 @@ public class RandomOutside : MonoBehaviour
         Debug.Log(timer);
         if (Player == null) return;
 
-        // Check of de speler in ÉÉN van de buiten-gebieden is
+        // Check whether the player is in one of the outside areas
         if (IsInAnyArea(outsideAreas, Player.transform.position))
         {
             timer -= Time.deltaTime;
@@ -29,18 +29,18 @@ public class RandomOutside : MonoBehaviour
                     audioSource.PlayOneShot(currentSound);
                 }
 
-                // Reset timer (terug naar 35 seconden)
+                // Reset timer (always 35)
                 timer = 35f;
             }
         }
         else
         {
-            // Reset timer when leaving so it doesn't instantly trigger upon re-entry
+            // Reset timer when leaving so it doesn't instantly trigger when entering again
             timer = 30f;
         }
     }
 
-    // Hulpfunctie die controleert of de speler in een van de colliders uit de lijst zit
+    // title speaks for itself I think
     private bool IsInAnyArea(Collider[] areas, Vector3 pos)
     {
         if (areas == null) return false;
@@ -49,7 +49,7 @@ public class RandomOutside : MonoBehaviour
         {
             if (area != null && area.bounds.Contains(pos))
             {
-                return true; // Gevonden!
+                return true; // found whohoo
             }
         }
         return false;

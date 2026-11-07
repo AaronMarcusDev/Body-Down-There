@@ -151,7 +151,7 @@ public class LookAndStepController : MonoBehaviour
 
         targetTilt = -side * maxTilt;
 
-        // make new stap with transform instead of raycast
+        // make new stap with transform instead of raycast (was a raycast before, that's why I note this ~ Aaron)
         moveTargetDirection = transform.forward;
         remainingStepDistance = stepDistance;
 
@@ -165,7 +165,7 @@ public class LookAndStepController : MonoBehaviour
     {
         Vector3 finalMoveVelocity = Vector3.zero;
 
-        // Calculate step movement
+        // Calculate step movement (distance)
         if (remainingStepDistance > 0f)
         {
             float moveThisFrame = movementSpeed * Time.deltaTime;
