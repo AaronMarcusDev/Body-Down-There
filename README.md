@@ -4,6 +4,7 @@
 Stif-bot  
 Aaron Struikenkamp, Jelle Brinkman, Luuk van der Hulst and Steven Zweers
 Itch.io: https://aaronmarcus.itch.io/body-down-there
+GitLab: https://gitlab.utwente.nl/s3731944/Body-Down-There/
 
 # Controls  
 Upon launching our game, look for the start button (it's hidden a little bit to the right of the 'play' text). To move around in the game you simply press the left and the right mouse button, corresponding with a left and right step in-game. You look around using your mouse.
